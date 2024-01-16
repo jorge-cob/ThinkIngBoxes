@@ -1,4 +1,3 @@
-import { useOAuth } from "@clerk/clerk-expo";
 import React, { useState } from "react";
 import {
   View,
@@ -10,57 +9,48 @@ import {
   Alert,
 } from "react-native";
 import { useWarmUpBrowser } from "../hooks/useWarmUpBrowser";
-import { useSignIn } from "@clerk/clerk-expo";
+import { useSignUp } from "@clerk/clerk-expo";
 
-const SignInWithOAuth = () => {
+const SignUpWithEmailAndPassword = () => {
   useWarmUpBrowser();
 
-  const { startOAuthFlow } = useOAuth({ strategy: "oauth_discord" });
-  const { signIn, setActive, isLoaded } = useSignIn();
+  const { signUp, setActive, isLoaded } = useSignUp();
 
   const [username, setUsername] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const onSignInPress = async () => {
+  const onSignUpPress = async () => {
     if (!isLoaded) {
       return;
     }
     setLoading(true);
     try {
-      const completeSignIn = await signIn.create({
-        identifier: username,
+      const completeSignUp = await signUp.create({
+        emailAddress,
+        username,
         password,
       });
 
       // This indicates the user is signed in
-      await setActive({ session: completeSignIn.createdSessionId });
+      await setActive({ session: completeSignUp.createdSessionId });
     } catch (err: any) {
       alert(err.errors[0].message);
     } finally {
       setLoading(false);
     }
   };
-  const handleSignInWithDiscordPress = React.useCallback(async () => {
-    try {
-      const { createdSessionId, signIn, signUp, setActive } =
-        await startOAuthFlow();
-      if (createdSessionId) {
-        setActive?.({ session: createdSessionId });
-      } else {
-        // Modify this code to use signIn or signUp to set this missing requirements you set in your dashboard.
-        throw new Error(
-          "There are unmet requirements, modifiy this else to handle them",
-        );
-      }
-    } catch (err) {
-      console.log(JSON.stringify(err, null, 2));
-      console.log("error signing in", err);
-    }
-  }, []);
 
   return (
     <View style={styles.container}>
+      <TextInput
+        autoCapitalize="none"
+        placeholder="user@email.com"
+        value={emailAddress}
+        onChangeText={setEmailAddress}
+        style={styles.inputField}
+      />
       <TextInput
         autoCapitalize="none"
         placeholder="Username"
@@ -76,19 +66,19 @@ const SignInWithOAuth = () => {
         style={styles.inputField}
       />
 
-      <Button onPress={onSignInPress} title="Login" color={"#6c47ff"}></Button>
+      <Button onPress={onSignUpPress} title="Login" color={"#6c47ff"}></Button>
 
       <Pressable style={styles.button}>
         <Text>Forgot password?</Text>
       </Pressable>
       <Pressable style={styles.button}>
-        <Text>Create Account</Text>
+        <Text>Already have an account?</Text>
       </Pressable>
     </View>
   );
 };
 
-export default SignInWithOAuth;
+export default SignUpWithEmailAndPassword;
 
 const styles = StyleSheet.create({
   container: {
